@@ -1,14 +1,16 @@
 import React, { useContext, useState } from 'react';
 import { View, StyleSheet, Modal } from 'react-native';
-import { TextInput, Button, Text, ActivityIndicator, Portal } from 'react-native-paper';
+import { TextInput, Button, Text, ActivityIndicator, Portal, Dialog } from 'react-native-paper';
 import { AuthContext } from './Contexts/AuthContext';
-import { Login } from './API/timetonic';
+import { DoLogin } from './API/Timetonic';
 
 function LoginScreen(): React.JSX.Element {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isFail, setIsFail] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+  const [errorDesc, setErrorDesc] = useState('');
 
   //Get Userstate context;
   const UserState = useContext(AuthContext);
@@ -19,27 +21,49 @@ function LoginScreen(): React.JSX.Element {
     console.log('Password:', password);
     
 
-    const response = await Login(email, password);
-    
+    const response = await DoLogin(email, password);
 
-    UserState?.setUserData({
+    if(response==null||response.errorcode != 0){
+      if(response==null||response.errorcode!=1){
+        setErrorMsg("Unknown Server Error.");
+        setErrorDesc("Please try again later.")
+      }
+      else{
+        setErrorMsg("Incorrect Login Data.");
+        setErrorDesc("Please check your login data and try again.")
+      }
+
+      setIsFail(true);
+    }
+
+    /*UserState?.setUserData({
       ...UserState.userData,
       username: email,
       password: password,
-    });
+    });*/
 
     setIsLoading(false);
 
-    console.log(UserState?.userData);
+    //console.log(UserState?.userData);
   };
+
+  const hideModal = () => setIsFail(false);
 
   return (
     <View style={styles.container}>
+      <Portal>
+      <Dialog visible={isFail} onDismiss={hideModal}>
+            <Dialog.Title>{errorMsg}</Dialog.Title>
+            <Dialog.Content>
+              <Text variant="bodyMedium">{errorDesc}</Text>
+            </Dialog.Content>
+          </Dialog>
+      </Portal>
       <Modal
         transparent={true}
         animationType="fade"
         visible={isLoading}>
-        <View style={styles.modalBackground}>
+        <View style={styles.overlayBg}>
           <ActivityIndicator animating={isLoading} />
         </View>
       </Modal>
@@ -49,14 +73,18 @@ function LoginScreen(): React.JSX.Element {
         value={email}
         onChangeText={text => setEmail(text)}
         style={styles.input}
-        disabled={isLoading}/>
+        disabled={isLoading}
+        autoComplete='email'
+        autoCapitalize='none'/>
       <TextInput
         label="Password"
         value={password}
         onChangeText={text => setPassword(text)}
         secureTextEntry
         style={styles.input}
-        disabled={isLoading}/>
+        disabled={isLoading}
+        autoComplete='current-password'
+        autoCapitalize='none'/>
       <Button mode="contained" onPress={handleLogin} disabled={isLoading} style={styles.button}>
       LOGIN
       </Button>
@@ -85,11 +113,15 @@ const styles = StyleSheet.create({
     marginTop: 10,
 
   },
-  modalBackground: {
+  overlayBg: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  modalBG: {
+    backgroundColor: 'white',
+    padding: 20
   },
 });
 
