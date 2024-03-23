@@ -1,6 +1,8 @@
 import {TIMETONIC_KEY} from '../Config';
+import {UserState} from '../Contexts/AuthContext';
 
 export const API_URL = 'https://timetonic.com/live/api.php';
+export const IMAGE_URL = 'https://timetonic.com/live';
 
 type LoginReturn = {
   userToken?: string;
@@ -40,8 +42,8 @@ export const DoLogin = async (
     console.log(data);
 
     if (data.status == 'nok') {
-      if (data.error.includes("invalid login/pwd")) {
-        console.log("Bad login data");
+      if (data.error.includes('invalid login/pwd')) {
+        console.log('Bad login data');
         return {
           errorcode: 1,
         };
@@ -66,6 +68,55 @@ export const DoLogin = async (
       'There was a problem with the fetch operation:',
       error.message,
     );
+    return null;
+  }
+};
+
+export type BookDisplay = {
+  bookName: string;
+  bookImg: string;
+};
+
+export const GetBooks = async (
+  userState: UserState,
+): Promise<BookDisplay[] | null> => {
+  try {
+    console.log('Starting session request');
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        req: 'getAllBooks',
+        o_u: userState.userData!.o_u!,
+        u_c: userState.userData!.o_u!,
+        sesskey: userState.userData!.sessionToken!,
+      }).toString(),
+    });
+
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    } else {
+      ('Network data gotten!');
+    }
+
+    const data = await response.json();
+    // Handle the response data
+    console.log(data);
+
+    if (data.status == 'nok') throw new Error(data.error);
+
+    const books: BookDisplay[] = data.allBooks.books.map(
+      (book: any, idx: number): BookDisplay => ({
+        bookName: book.ownerPrefs.title,
+        bookImg: `${IMAGE_URL}${book.ownerPrefs.oCoverImg.replace('/dev', '')}`,
+      }),
+    );
+    console.log(books);
+    return books;
+  } catch (error: any) {
+    console.error('There was a problem with the session', error.message);
     return null;
   }
 };

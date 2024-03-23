@@ -36,11 +36,13 @@ function LoginScreen(): React.JSX.Element {
       setIsFail(true);
     }
 
-    /*UserState?.setUserData({
-      ...UserState.userData,
+    UserState?.setUserData({
       username: email,
       password: password,
-    });*/
+      o_u: response!.o_u,
+      userToken : response!.userToken,
+      sessionToken : response!.sessionToken,
+    });
 
     setIsLoading(false);
 

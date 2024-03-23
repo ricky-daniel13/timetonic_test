@@ -2,13 +2,14 @@ import React, { createContext, useState, useContext, FC } from 'react';
 
 export const AuthContext = createContext<UserState|null>(null);
 
-type UserState = {
+export type UserState = {
     userData: UserData;
     setUserData: React.Dispatch<React.SetStateAction<UserData>>;
   };
 
 type UserData = {
     username?: string;
+    o_u?: string;
     password?: string;
     userToken?: string;
     sessionToken?: string;
