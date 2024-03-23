@@ -16,12 +16,13 @@ function LoginScreen(): React.JSX.Element {
   const UserState = useContext(AuthContext);
 
   const handleLogin = async () => {
+
+    
     setIsLoading(true);
-    console.log('Email:', email);
-    console.log('Password:', password);
     
 
     const response = await DoLogin(email, password);
+    console.log("Response: ", response);
 
     if(response==null||response.errorcode != 0){
       if(response==null||response.errorcode!=1){
@@ -32,8 +33,9 @@ function LoginScreen(): React.JSX.Element {
         setErrorMsg("Incorrect Login Data.");
         setErrorDesc("Please check your login data and try again.")
       }
-
       setIsFail(true);
+      setIsLoading(false);
+      return;
     }
 
     UserState?.setUserData({
@@ -43,10 +45,6 @@ function LoginScreen(): React.JSX.Element {
       userToken : response!.userToken,
       sessionToken : response!.sessionToken,
     });
-
-    setIsLoading(false);
-
-    //console.log(UserState?.userData);
   };
 
   const hideModal = () => setIsFail(false);

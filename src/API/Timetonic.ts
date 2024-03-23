@@ -36,18 +36,19 @@ export const DoLogin = async (
       ('Network data gotten!');
     }
 
-    let errorcode: number = 0;
     const data = await response.json();
     // Handle the response data
     console.log(data);
 
     if (data.status == 'nok') {
+      console.log("Nok status in data.");
       if (data.error.includes('invalid login/pwd')) {
-        console.log('Bad login data');
+        console.log('Bad login data, returning');
         return {
           errorcode: 1,
         };
-      } else throw new Error(data.error);
+      } else 
+        throw new Error(data.error);
     }
 
     const sessionToken = await DoSession(data.o_u, data.oauthkey);
@@ -81,7 +82,7 @@ export const GetBooks = async (
   userState: UserState,
 ): Promise<BookDisplay[] | null> => {
   try {
-    console.log('Starting session request');
+    console.log('Starting getbooks request');
     const response = await fetch(API_URL, {
       method: 'POST',
       headers: {
@@ -102,8 +103,6 @@ export const GetBooks = async (
     }
 
     const data = await response.json();
-    // Handle the response data
-    console.log(data);
 
     if (data.status == 'nok') throw new Error(data.error);
 
@@ -113,6 +112,13 @@ export const GetBooks = async (
         bookImg: `${IMAGE_URL}${book.ownerPrefs.oCoverImg.replace('/dev', '')}`,
       }),
     );
+
+    books.push(...books);
+    books.push(...books);
+
+    //Test for more books than fit on the screen.
+
+
     console.log(books);
     return books;
   } catch (error: any) {
@@ -146,7 +152,6 @@ export const DoSession = async (
     }
 
     const data = await response.json();
-    // Handle the response data
     console.log(data);
 
     if (data.status == 'nok') throw new Error(data.error);
