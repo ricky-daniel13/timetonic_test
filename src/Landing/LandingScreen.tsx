@@ -1,6 +1,6 @@
-import React, { CSSProperties, useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { View, StyleSheet, Modal, ScrollView, ViewStyle } from 'react-native';
-import { TextInput, Button, Text, ActivityIndicator, Portal, Dialog, Card, Title, Paragraph, Avatar, Appbar } from 'react-native-paper';
+import { ActivityIndicator, Appbar, List, Surface } from 'react-native-paper';
 import { AuthContext } from '../Contexts/AuthContext';
 import { BookDisplay, GetBooks } from '../API/Timetonic';
 
@@ -16,11 +16,11 @@ function LandingScreen(): React.JSX.Element {
 
 
     useEffect(() => {
-        // This runs only on mount (when the component appears)
+        // Getbooks on mount
         GetBooks(UserState!).then((books) => {
             if (books != null)
                 setCardData(books);
-                setIsLoading(false);
+            setIsLoading(false);
         });
     }, []);
 
@@ -32,7 +32,7 @@ function LandingScreen(): React.JSX.Element {
                 animationType="fade"
                 visible={isLoading}>
                 <View style={styles.overlayBg}>
-                <ActivityIndicator animating={isLoading} />
+                    <ActivityIndicator animating={isLoading} />
                 </View>
             </Modal>
             <Appbar.Header>
@@ -57,20 +57,19 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0, 0, 0, 0.5)',
         justifyContent: 'center',
         alignItems: 'center',
-      },
+    },
     content: {
         paddingBottom: 100,
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        justifyContent: 'space-around',
     },
     card: {
-        marginTop: 10,
-        width: '45%'
+        marginTop: 5,
+        padding: 0,
     },
-    bookImage: {
-        height: 100,
-    },
+    cardImage:{
+        padding: 0,
+        margin:0,
+        height:500
+    }
 });
 
 
@@ -81,11 +80,16 @@ type BookCardProps = {
 };
 export const BookCard = ({ title, imageurl, style }: BookCardProps) => {
     return (
-        <Card style={style} elevation={5}>
-            <Card.Cover source={{ uri: imageurl }} style={styles.bookImage} />
-            <Card.Title
-                title={title} />
-        </Card>
+        <Surface elevation={5} style={styles.card}>
+            <List.Item title={title}
+                left={(props) => (
+                    <List.Image
+                        style={{...props.style, ...styles.cardImage}}
+                        source={{ uri: imageurl }}
+                    />
+                )}
+            />
+        </Surface>
     );
 };
 

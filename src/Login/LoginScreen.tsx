@@ -1,8 +1,8 @@
 import React, { useContext, useState } from 'react';
 import { View, StyleSheet, Modal } from 'react-native';
 import { TextInput, Button, Text, ActivityIndicator, Portal, Dialog } from 'react-native-paper';
-import { AuthContext } from './Contexts/AuthContext';
-import { DoLogin } from './API/Timetonic';
+import { AuthContext } from '../Contexts/AuthContext';
+import { DoLogin } from '../API/Timetonic';
 
 function LoginScreen(): React.JSX.Element {
   const [email, setEmail] = useState('');
@@ -11,19 +11,18 @@ function LoginScreen(): React.JSX.Element {
   const [isFail, setIsFail] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [errorDesc, setErrorDesc] = useState('');
+  
 
   //Get Userstate context;
   const UserState = useContext(AuthContext);
 
   const handleLogin = async () => {
-
-    
     setIsLoading(true);
-    
-
+    //Gets Login information
     const response = await DoLogin(email, password);
     console.log("Response: ", response);
 
+    //Check for errors
     if(response==null||response.errorcode != 0){
       if(response==null||response.errorcode!=1){
         setErrorMsg("Unknown Server Error.");
@@ -37,6 +36,8 @@ function LoginScreen(): React.JSX.Element {
       setIsLoading(false);
       return;
     }
+
+    //If no errors, update userdata, this will move us onto the landing page
 
     UserState?.setUserData({
       username: email,

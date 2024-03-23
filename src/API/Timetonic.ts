@@ -112,13 +112,9 @@ export const GetBooks = async (
         bookImg: `${IMAGE_URL}${book.ownerPrefs.oCoverImg.replace('/dev', '')}`,
       }),
     );
-
-    books.push(...books);
-    books.push(...books);
-
     //Test for more books than fit on the screen.
-
-
+    /*books.push(...books);
+    books.push(...books);*/
     console.log(books);
     return books;
   } catch (error: any) {
