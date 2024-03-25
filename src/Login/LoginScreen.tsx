@@ -3,6 +3,7 @@ import { View, StyleSheet, Modal } from 'react-native';
 import { TextInput, Button, Text, ActivityIndicator, Portal, Dialog } from 'react-native-paper';
 import { AuthContext } from '../Contexts/AuthContext';
 import { DoLogin } from '../API/Timetonic';
+import ExtError from '../Library/ExtError';
 
 function LoginScreen(): React.JSX.Element {
   const [email, setEmail] = useState('');
@@ -11,7 +12,7 @@ function LoginScreen(): React.JSX.Element {
   const [isFail, setIsFail] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [errorDesc, setErrorDesc] = useState('');
-  
+
 
   //Get Userstate context;
   const UserState = useContext(AuthContext);
@@ -19,33 +20,31 @@ function LoginScreen(): React.JSX.Element {
   const handleLogin = async () => {
     setIsLoading(true);
     //Gets Login information
-    const response = await DoLogin(email, password);
-    console.log("Response: ", response);
+    try {
+      const response = await DoLogin(email, password);
+      console.log("Response: ", response);
+      UserState?.setUserData({
+        username: email,
+        password: password,
+        o_u: response!.o_u,
+        userToken: response!.userToken,
+        sessionToken: response!.sessionToken,
+      });
+    }
+    catch (error: any) {
+      if (error instanceof ExtError) {
+        console.log(error.message);
+        setErrorMsg(error.userErrorTitle);
+        setErrorDesc(error.userErrorMessage);
+      } else {
+        console.log(error.message);
+        setErrorMsg("Unknown Connection Error");
+        setErrorDesc("Try again later.");
+      }
 
-    //Check for errors
-    if(response==null||response.errorcode != 0){
-      if(response==null||response.errorcode!=1){
-        setErrorMsg("Unknown Server Error.");
-        setErrorDesc("Please try again later.")
-      }
-      else{
-        setErrorMsg("Incorrect Login Data.");
-        setErrorDesc("Please check your login data and try again.")
-      }
       setIsFail(true);
       setIsLoading(false);
-      return;
     }
-
-    //If no errors, update userdata, this will move us onto the landing page
-
-    UserState?.setUserData({
-      username: email,
-      password: password,
-      o_u: response!.o_u,
-      userToken : response!.userToken,
-      sessionToken : response!.sessionToken,
-    });
   };
 
   const hideModal = () => setIsFail(false);
@@ -53,12 +52,12 @@ function LoginScreen(): React.JSX.Element {
   return (
     <View style={styles.container}>
       <Portal>
-      <Dialog visible={isFail} onDismiss={hideModal}>
-            <Dialog.Title>{errorMsg}</Dialog.Title>
-            <Dialog.Content>
-              <Text variant="bodyMedium">{errorDesc}</Text>
-            </Dialog.Content>
-          </Dialog>
+        <Dialog visible={isFail} onDismiss={hideModal}>
+          <Dialog.Title>{errorMsg}</Dialog.Title>
+          <Dialog.Content>
+            <Text variant="bodyMedium">{errorDesc}</Text>
+          </Dialog.Content>
+        </Dialog>
       </Portal>
       <Modal
         transparent={true}
@@ -76,7 +75,7 @@ function LoginScreen(): React.JSX.Element {
         style={styles.input}
         disabled={isLoading}
         autoComplete='email'
-        autoCapitalize='none'/>
+        autoCapitalize='none' />
       <TextInput
         label="Password"
         value={password}
@@ -85,9 +84,9 @@ function LoginScreen(): React.JSX.Element {
         style={styles.input}
         disabled={isLoading}
         autoComplete='current-password'
-        autoCapitalize='none'/>
+        autoCapitalize='none' />
       <Button mode="contained" onPress={handleLogin} disabled={isLoading} style={styles.button}>
-      LOGIN
+        LOGIN
       </Button>
     </View>
   );
@@ -97,7 +96,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    alignItems:'center',
+    alignItems: 'center',
     alignContent: 'space-around',
     paddingHorizontal: 20,
   },
